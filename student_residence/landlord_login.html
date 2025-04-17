@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Landlord Login | Student Residence Finder</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .auth-card {
+            max-width: 500px;
+            margin: 0 auto;
+            border-radius: 15px;
+        }
+        .form-icon {
+            font-size: 1.2rem;
+            width: 40px;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-home me-2"></i>StudentResidenceFinder
+            </a>
+        </div>
+    </nav>
+
+    <!-- Login Section -->
+    <section class="py-5">
+        <div class="container">
+            <div class="auth-card card shadow-lg">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">Landlord Login</h2>
+                    <form action="#" method="post">
+                        <!-- Email Input -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email Address</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope form-icon"></i>
+                                </span>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email"
+                                       placeholder="name@example.com" 
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Password Input -->
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock form-icon"></i>
+                                </span>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="password" 
+                                       name="password"
+                                       placeholder="Enter your password" 
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Remember Me & Forgot Password -->
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="remember">
+                                <label class="form-check-label" for="remember">
+                                    Remember me
+                                </label>
+                            </div>
+                            <a href="#" class="text-decoration-none">
+                                Forgot Password?
+                            </a>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100 mb-3" onclick="window.location.href='landlord_account.html'">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Dashboard
+                        </button>
+
+                        <!-- Registration Link -->
+                        <div class="text-center">
+                            <p class="mb-0">Not registered yet? 
+                                <a href="landlord_signup.html" class="text-decoration-none">
+                                    Create landlord account
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-auto">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2023 StudentResidenceFinder. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

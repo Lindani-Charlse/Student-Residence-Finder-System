@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard | Residence Finder</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Mapbox GL -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="student-dashboard">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-home me-2"></i>ResidenceFinder
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#search-section"><i class="fas fa-search me-1"></i> Search</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#saved-section"><i class="fas fa-heart me-1"></i> Saved</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#messages-section"><i class="fas fa-envelope me-1"></i> Messages</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#appointments-section"><i class="fas fa-calendar-alt me-1"></i> Appointments</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
+                            <img src="holani.jpg" alt="Profile" width="32" height="32" class="rounded-circle me-2">
+                            <span>Baloyi Holani</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#profile-section"><i class="fas fa-user me-2"></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="index.html"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Search Filters</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchFilters">
+                            <!-- Location -->
+                            <div class="mb-3">
+                                <label class="form-label">Location</label>
+                                <select class="form-select" id="location">
+                                    <option selected>Anywhere</option>
+                                    <option>Within 1km of campus</option>
+                                    <option>Within 3km of campus</option>
+                                    <option>Near public transport</option>
+                                    <option>Braamfontein</option>
+                                    <option>Hatfield</option>
+                                    <option>Sunnyside</option>
+                                </select>
+                            </div>
+
+                            <!-- Rent Range -->
+                            <div class="mb-3">
+                                <label class="form-label">Rent Range (ZAR)</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="number" class="form-control" placeholder="Min" id="minRent" min="0" step="500">
+                                    <span class="mx-2">to</span>
+                                    <input type="number" class="form-control" placeholder="Max" id="maxRent" min="0" step="500">
+                                </div>
+                                <div id="rentRange" class="mt-2"></div>
+                            </div>
+
+                            <!-- Accommodation Type -->
+                            <div class="mb-3">
+                                <label class="form-label">Accommodation Type</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="privateRoom" checked>
+                                    <label class="form-check-label" for="privateRoom">Private Room</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="sharedRoom" checked>
+                                    <label class="form-check-label" for="sharedRoom">Shared Room</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="studio" checked>
+                                    <label class="form-check-label" for="studio">Studio Apartment</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="sharedApartment" checked>
+                                    <label class="form-check-label" for="sharedApartment">Shared Apartment</label>
+                                </div>
+                            </div>
+
+                            <!-- Amenities -->
+                            <div class="mb-3">
+                                <label class="form-label">Amenities</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="wifi">
+                                    <label class="form-check-label" for="wifi">Wi-Fi</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="parking">
+                                    <label class="form-check-label" for="parking">Parking</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="laundry">
+                                    <label class="form-check-label" for="laundry">Laundry</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="kitchen">
+                                    <label class="form-check-label" for="kitchen">Kitchen</label>
+                                </div>
+                            </div>
+
+                            <!-- Availability -->
+                            <div class="mb-3">
+                                <label class="form-label">Availability</label>
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">From</span>
+                                    <input type="date" class="form-control" id="moveInDate">
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">To</span>
+                                    <input type="date" class="form-control" id="moveOutDate">
+                                </div>
+                            </div>
+
+                            <!-- Sort Options -->
+                            <div class="mb-3">
+                                <label class="form-label">Sort By</label>
+                                <select class="form-select" id="sortBy">
+                                    <option value="relevance">Relevance</option>
+                                    <option value="price-asc">Price: Low to High</option>
+                                    <option value="price-desc">Price: High to Low</option>
+                                    <option value="distance">Distance to Campus</option>
+                                    <option value="newest">Newest Listings</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-2"></i>Apply Filters
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-lg-9">
+                <!-- Search Results Section -->
+                <section id="search-section" class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-search me-2"></i>Available Residences</h2>
+                        <div class="d-flex">
+                            <button class="btn btn-outline-secondary me-2" id="mapViewBtn">
+                                <i class="fas fa-map-marked-alt me-1"></i> Map View
+                            </button>
+                            <button class="btn btn-outline-secondary" id="listViewBtn">
+                                <i class="fas fa-list me-1"></i> List View
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Map View (Hidden by default) -->
+                    <div id="mapView" style="display: none; height: 500px;" class="mb-4 rounded-3 shadow-sm">
+                        <div id="map" class="h-100 rounded-3"></div>
+                    </div>
+
+                    <!-- List View -->
+                    <div id="listView">
+                        <div class="row g-4">
+                            <!-- Property Card 1 -->
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card property-card h-100">
+                                    <div class="badge bg-success position-absolute top-0 end-0 m-2">Available</div>
+                                    <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="card-img-top property-img" alt="Property">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="card-title mb-0">Modern Studio in Braamfontein</h5>
+                                            <button class="btn btn-sm btn-outline-secondary save-property">
+                                                <i class="far fa-heart"></i>
+                                            </button>
+                                        </div>
+                                        <p class="card-text text-muted small">
+                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                            1.2km from University of Johannesburg
+                                        </p>
+                                        <div class="property-features d-flex flex-wrap gap-2 mb-3">
+                                            <span class="badge bg-light text-dark"><i class="fas fa-bed me-1"></i> 1 Bed</span>
+                                            <span class="badge bg-light text-dark"><i class="fas fa-bath me-1"></i> 1 Bath</span>
+                                            <span class="badge bg-light text-dark"><i class="fas fa-wifi me-1"></i> Wi-Fi</span>
+                                            <span class="badge bg-light text-dark"><i class="fas fa-car me-1"></i> Parking</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="text-primary fw-bold">R5,200</span>/mo
+                                            </div>
+                                            <a href="property-details.html" class="btn btn-sm btn-outline-primary">View Details</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Property Card 2 -->
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card property-card h-100">
+                                    <div class="badge bg-warning text-dark position-absolute top-0 end-0 m-2">Limited</div>
+                                    <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="card-img-top property-img" alt="Property">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="card-title mb-0">Shared Apartment in Hatfield</h5>
+                                            <button class="btn btn-sm btn-outline-secondary save-property">
+                                                <i class="far fa-heart"></i>
+                                            </button>
+                                        </div>
+                                        <p class="card-text text-muted small">
+                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                            0.8km from University of Pretoria
+                                        </p>
+                                        <div class="property-features d-flex flex-wrap gap-2 mb-3">
+                                            <span class="badge bg-light text-dark"><i class="fas fa-bed me-1"></i> 2 Beds</span>
+                                            <span class="badge bg-light text-dark"><i class="fas fa-bath me-1"></i> 1 Bath</span>
+                                            <span class="badge bg-light text-dark"><i class="fas fa-utensils me-1"></i> Kitchen</span>
+                                            <span class="badge bg-light text-dark"><i class="fas fa-tv me-1"></i> Furnished</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="text-primary fw-bold">R3,800</span>/mo
+                                            </div>
+                                            <a href="property-details.html" class="btn btn-sm btn-outline-primary">View Details</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Property Card 3 -->
+                            <div class="col-md-6 col-lg-4">
+                                <div class="card property-card h-100">
+                                    <div class="badge bg-success position-absolute top-0 end-0 m-2">Available</div>
+                                    <img src="https://images.unsplash.com/photo-1554469384-e58fac16e23a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80" class="card-img-top property-img" alt="Property">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="card-title mb-0">Private Room in Sunnyside</h5>
+                                            <button class="btn btn-sm btn-outline-secondary save-property">
+                                                <i class="far fa-heart"></i>
+                                            </button>
+                                        </div>
+                                        <p class="card-text text-muted small">
+                                            <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                            1.5km from Tshwane University
+                                        </p>
+                                        <div class="property-features d-flex flex-wrap gap-2 mb-3">
+                                            <span class="badge bg-light text-dark"><i class="fas fa-bed me-1"></i> 1 Bed</span>
+                                            <span class="badge bg-light text-dark"><i class="fas fa-bath me-1"></i> Shared Bath</span>
+                                            <span class="badge bg-light text-dark"><i class="fas fa-wifi me-1"></i> Wi-Fi</span>
+                                            <span class="badge bg-light text-dark"><i class="fas fa-tshirt me-1"></i> Laundry</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="text-primary fw-bold">R2,900</span>/mo
+                                            </div>
+                                            <a href="property-details.html" class="btn btn-sm btn-outline-primary">View Details</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Saved Properties Section -->
+                <section id="saved-section" class="mb-5">
+                    <h2 class="mb-4"><i class="fas fa-heart me-2"></i>Saved Properties</h2>
+                    <div class="alert alert-info">
+                        You have 2 saved properties. <a href="#" class="alert-link">View all</a>
+                    </div>
+                    <div class="row g-4">
+                        <!-- Saved Property 1 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <img src="https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="img-fluid rounded-start h-100" alt="Saved Property" style="object-fit: cover;">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between">
+                                                <h5 class="card-title">Luxury Studio in Sandton</h5>
+                                                <button class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            <p class="card-text text-muted small">
+                                                <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                                3.5km from Wits University
+                                            </p>
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <span class="text-primary fw-bold">R6,500/mo</span>
+                                                <div>
+                                                    <button class="btn btn-sm btn-primary me-2">
+                                                        <i class="fas fa-envelope me-1"></i> Contact
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-calendar me-1"></i> Viewing
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Saved Property 2 -->
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" class="img-fluid rounded-start h-100" alt="Saved Property" style="object-fit: cover;">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between">
+                                                <h5 class="card-title">Shared House in Melville</h5>
+                                                <button class="btn btn-sm btn-outline-danger">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            <p class="card-text text-muted small">
+                                                <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                                2.1km from UJ Auckland Park
+                                            </p>
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <span class="text-primary fw-bold">R4,200/mo</span>
+                                                <div>
+                                                    <button class="btn btn-sm btn-primary me-2">
+                                                        <i class="fas fa-envelope me-1"></i> Contact
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary">
+                                                        <i class="fas fa-calendar me-1"></i> Viewing
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Messages Section -->
+                <section id="messages-section" class="mb-5">
+                    <h2 class="mb-4"><i class="fas fa-envelope me-2"></i>Messages</h2>
+                    <div class="card">
+                        <div class="card-header">
+                            <ul class="nav nav-tabs card-header-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="#">Inbox (3)</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Sent</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Archived</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <!-- Message 1 -->
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://randomuser.me/api/portraits/men/32.jpg" width="40" height="40" class="rounded-circle me-3" alt="Landlord">
+                                            <div>
+                                                <h6 class="mb-0">Mr. Peterson</h6>
+                                                <small class="text-muted">Braamfontein Studio</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted">Today, 10:30 AM</small>
+                                            <span class="badge bg-primary rounded-pill ms-2">New</span>
+                                        </div>
+                                    </div>
+                                    <p class="mb-0 mt-2">Hi Sarah, the studio is still available. Would you like to schedule a viewing?</p>
+                                </a>
+                                <!-- Message 2 -->
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://randomuser.me/api/portraits/women/45.jpg" width="40" height="40" class="rounded-circle me-3" alt="Landlord">
+                                            <div>
+                                                <h6 class="mb-0">Ms. Khumalo</h6>
+                                                <small class="text-muted">Hatfield Shared Apartment</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted">Yesterday, 4:15 PM</small>
+                                        </div>
+                                    </div>
+                                    <p class="mb-0 mt-2">I've attached the lease agreement for your review.</p>
+                                </a>
+                                <!-- Message 3 -->
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://randomuser.me/api/portraits/men/68.jpg" width="40" height="40" class="rounded-circle me-3" alt="Landlord">
+                                            <div>
+                                                <h6 class="mb-0">Dr. Van der Merwe</h6>
+                                                <small class="text-muted">Sunnyside Private Room</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted">Monday, 9:20 AM</small>
+                                        </div>
+                                    </div>
+                                    <p class="mb-0 mt-2">The room will be available from next month as discussed.</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Appointments Section -->
+                <section id="appointments-section" class="mb-5">
+                    <h2 class="mb-4"><i class="fas fa-calendar-alt me-2"></i>Viewing Appointments</h2>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Property</th>
+                                            <th>Date & Time</th>
+                                            <th>Location</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80" width="50" height="50" class="rounded me-3" style="object-fit: cover;">
+                                                    <div>
+                                                        <h6 class="mb-0">Braamfontein Studio</h6>
+                                                        <small class="text-muted">Mr. Peterson</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>Fri, 15 Sep 2025<br>2:00 PM</td>
+                                            <td>24 Juta St, Braamfontein</td>
+                                            <td><span class="badge bg-success">Confirmed</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-2">Details</button>
+                                                <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://images.unsplash.com/photo-1554469384-e58fac16e23a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80" width="50" height="50" class="rounded me-3" style="object-fit: cover;">
+                                                    <div>
+                                                        <h6 class="mb-0">Sunnyside Private Room</h6>
+                                                        <small class="text-muted">Dr. Van der Merwe</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>Mon, 18 Sep 2023<br>10:30 AM</td>
+                                            <td>12 Sunnyside Ave, Pretoria</td>
+                                            <td><span class="badge bg-warning text-dark">Pending</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-2">Details</button>
+                                                <button class="btn btn-sm btn-outline-danger">Cancel</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Profile Section -->
+                <section id="profile-section">
+                    <h2 class="mb-4"><i class="fas fa-user me-2"></i>My Profile</h2>
+                    <div class="row">
+                        <div class="col-lg-4 mb-4">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <img src="holani.jpg" class="rounded-circle mb-3" width="120" height="120" alt="Profile">
+                                    <h4>Holani Baloyi</h4>
+                                    <p class="text-muted">University of Johannesburg</p>
+                                    <button class="btn btn-outline-primary btn-sm">Edit Profile</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-4">Personal Information</h5>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Full Name</label>
+                                            <input type="text" class="form-control" value="Baloyi Holani" disabled>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Student Number</label>
+                                            <input type="text" class="form-control" value="20234567" disabled>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Email</label>
+                                            <input type="email" class="form-control" value="holani@student.uj.ac.za" disabled>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Phone</label>
+                                            <input type="tel" class="form-control" value="+27 76 123 4567">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">University</label>
+                                            <select class="form-select">
+                                                <option>University of Johannesburg</option>
+                                                <option>University of Pretoria</option>
+                                                <option>Tshwane University of Technology</option>
+                                            </select>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Campus</label>
+                                            <input type="text" class="form-control" value="Auckland Park Kingsway">
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Preferred Accommodation</label>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="prefPrivate" checked>
+                                                <label class="form-check-label" for="prefPrivate">Private Room</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="prefShared" checked>
+                                                <label class="form-check-label" for="prefShared">Shared Room</label>
+                                            </div>
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" id="prefStudio">
+                                                <label class="form-check-label" for="prefStudio">Studio Apartment</label>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Maximum Budget (ZAR)</label>
+                                            <input type="range" class="form-range" min="2000" max="10000" step="500" value="6000" id="budgetRange">
+                                            <div class="d-flex justify-content-between">
+                                                <small>R2,000</small>
+                                                <small>R6,000</small>
+                                                <small>R10,000</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-12 mt-4">
+                                            <button class="btn btn-primary">Save Changes</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Mapbox GL JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html>
