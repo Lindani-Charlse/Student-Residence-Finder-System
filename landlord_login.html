@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Student Residence Finder</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --admin-primary: #dc3545;
+            --admin-secondary: #a71d2a;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .navbar-admin {
+            background-color: var(--admin-primary) !important;
+        }
+        
+        .auth-card {
+            max-width: 500px;
+            margin: 2rem auto;
+            border-radius: 15px;
+            border-top: 5px solid var(--admin-primary);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .form-icon {
+            font-size: 1.2rem;
+            width: 40px;
+        }
+        
+        .btn-admin {
+            background-color: var(--admin-primary);
+            border: none;
+            padding: 10px;
+        }
+        
+        .btn-admin:hover {
+            background-color: var(--admin-secondary);
+        }
+        
+        .admin-badge {
+            background-color: var(--admin-primary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        #loginAlert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        #loginSpinner {
+            display: none;
+        }
+        
+        .role-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+        
+        .input-group-text {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Alert Messages -->
+    <div id="loginAlert" class="alert alert-dismissible fade" role="alert">
+        <span id="alertMessage"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-admin">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-home me-2"></i>StudentResidenceFinder
+                <span class="admin-badge">ADMIN PORTAL</span>
+            </a>
+            <div class="navbar-text">
+                <a href="student_login.html" class="text-white">Student Login</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Section -->
+    <section class="py-5 flex-grow-1">
+        <div class="container">
+            <div class="auth-card card">
+                <div class="card-body p-5">
+                    <h2 class="text-center mb-4">
+                        <i class="fas fa-user-shield me-2"></i>Admin Login
+                    </h2>
+                    
+                    <div class="role-warning">
+                        <i class="fas fa-exclamation-circle me-2"></i>
+                        <strong>Restricted Access:</strong> This portal is for authorized administrators and property managers only.
+                    </div>
+                    
+                    <!-- Login Form -->
+                    <form id="adminLoginForm">
+                        <!-- Email Input -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Admin Email</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope form-icon"></i>
+                                </span>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="adminEmail" 
+                                       placeholder="admin@domain.com" 
+                                       required>
+                            </div>
+                        </div>
+
+                        <!-- Password Input -->
+                        <div class="mb-4">
+                            <label for="password" class="form-label">Password</label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-lock form-icon"></i>
+                                </span>
+                                <input type="password" 
+                                       class="form-control" 
+                                       id="adminPassword" 
+                                       placeholder="Enter your password" 
+                                       required>
+                                <span class="input-group-text toggle-password">
+                                    <i class="fas fa-eye"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Remember Me & Forgot Password -->
+                        <div class="d-flex justify-content-between mb-4">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="rememberMe">
+                                <label class="form-check-label" for="rememberMe">Remember me</label>
+                            </div>
+                            <a href="admin_forgot_password.html" class="text-decoration-none">
+                                Forgot Password?
+                            </a>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-admin text-white w-100 mb-3" id="loginButton">
+                            <i class="fas fa-sign-in-alt me-2"></i> Login to Management
+                            <span class="spinner-border spinner-border-sm ms-2" id="loginSpinner"></span>
+                        </button>
+
+                        <!-- Registration Link -->
+                        <div class="text-center">
+                            <p class="mb-0">Need admin access? 
+                                <a href="landlord_signup.html" class="text-decoration-none">
+                                    Request admin account
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-auto">
+        <div class="container text-center">
+            <p class="mb-0">&copy; 2025 StudentResidenceFinder. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Toggle password visibility
+            document.querySelector('.toggle-password').addEventListener('click', function() {
+                const passwordInput = document.getElementById('adminPassword');
+                const icon = this.querySelector('i');
+                
+                if (passwordInput.type === 'password') {
+                    passwordInput.type = 'text';
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    passwordInput.type = 'password';
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+
+            // Handle remember me functionality
+            const rememberMe = document.getElementById('rememberMe');
+            const emailInput = document.getElementById('adminEmail');
+            
+            // Check if there's saved login data
+            if (localStorage.getItem('adminRememberMe') === 'true') {
+                rememberMe.checked = true;
+                emailInput.value = localStorage.getItem('adminSavedEmail') || '';
+            }
+
+            // Login form submission
+            document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const email = emailInput.value.trim();
+                const password = document.getElementById('adminPassword').value;
+                const loginButton = document.getElementById('loginButton');
+                const spinner = document.getElementById('loginSpinner');
+                const alert = document.getElementById('loginAlert');
+                const alertMessage = document.getElementById('alertMessage');
+                
+                // Basic validation
+                if (!email || !password) {
+                    showAlert('Please enter both email and password', 'danger');
+                    return;
+                }
+
+                // Show loading spinner
+                loginButton.disabled = true;
+                spinner.style.display = 'inline-block';
+                
+                try {
+                    // Send login request to backend - using the correct admin endpoint
+                    const response = await fetch('http://localhost:3000/api/admin/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            email,
+                            password
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (response.ok) {
+                        // Verify the user is an admin or manager
+                        if (!['admin', 'manager'].includes(data.admin.role)) {
+                            throw new Error('This portal is for administrators only. Please use the appropriate login page.');
+                        }
+                        
+                        // Save to localStorage if "Remember me" is checked
+                        if (rememberMe.checked) {
+                            localStorage.setItem('adminRememberMe', 'true');
+                            localStorage.setItem('adminSavedEmail', email);
+                        } else {
+                            localStorage.removeItem('adminRememberMe');
+                            localStorage.removeItem('adminSavedEmail');
+                        }
+                        
+                        // Store admin data in sessionStorage for dashboard access
+                        sessionStorage.setItem('adminData', JSON.stringify(data.admin));
+                        sessionStorage.setItem('adminToken', data.token);
+                        
+                        // Show success message
+                        showAlert('Admin login successful! Redirecting to dashboard...', 'success');
+                        
+                        // Redirect to management dashboard after 1.5 seconds
+                        setTimeout(() => {
+                            window.location.href = 'management.html';
+                        }, 1500);
+                    } else {
+                        // Show error message from server or default message
+                        const errorMsg = data.error || 'Login failed. Please check your credentials.';
+                        throw new Error(errorMsg);
+                    }
+                } catch (error) {
+                    console.error('Login error:', error);
+                    showAlert(error.message || 'Network error. Please try again.', 'danger');
+                } finally {
+                    // Hide loading spinner
+                    loginButton.disabled = false;
+                    spinner.style.display = 'none';
+                }
+            });
+
+            // Helper function to show alerts
+            function showAlert(message, type) {
+                const alert = document.getElementById('loginAlert');
+                const alertMessage = document.getElementById('alertMessage');
+                
+                alertMessage.textContent = message;
+                alert.classList.remove('alert-success', 'alert-danger');
+                alert.classList.add(`alert-${type}`);
+                alert.classList.add('show');
+                
+                // Auto-hide alert after 5 seconds
+                setTimeout(() => {
+                    alert.classList.remove('show');
+                }, 5000);
+            }
+        });
+    </script>
+</body>
+</html>

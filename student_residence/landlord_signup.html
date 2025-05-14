@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Registration | Student Residence Finder</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --admin-primary: #dc3545;
+        }
+        body {
+            background: #f8f9fa;
+            min-height: 100vh;
+        }
+        .auth-card {
+            max-width: 600px;
+            margin: 2rem auto;
+            border-top: 4px solid var(--admin-primary);
+        }
+        .required-field::after {
+            content: " *";
+            color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="auth-card card shadow">
+            <div class="card-body p-5">
+                <h2 class="text-center mb-4 text-danger">
+                    <i class="fas fa-user-shield me-2"></i>Admin Registration
+                </h2>
+                
+                <div id="alertContainer"></div>
+
+                <form id="adminRegistrationForm">
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label required-field">Full Name</label>
+                            <input type="text" class="form-control" id="fullName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required-field">Email</label>
+                            <input type="email" class="form-control" id="email" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required-field">Password</label>
+                            <input type="password" class="form-control" id="password" minlength="8" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required-field">Confirm Password</label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label required-field">Role</label>
+                            <select class="form-select" id="role" required>
+                                <option value="" disabled selected>Select role</option>
+                                <option value="admin">Administrator</option>
+                                <option value="manager">Manager</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Organization</label>
+                            <input type="text" class="form-control" id="organization">
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid mt-4">
+                        <button type="submit" class="btn btn-danger btn-lg">
+                            <i class="fas fa-user-plus me-2"></i> Register Admin
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('adminRegistrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validate passwords match
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            const formData = {
+                email: document.getElementById('email').value,
+                password: password,
+                fullName: document.getElementById('fullName').value,
+                role: document.getElementById('role').value,
+                organization: document.getElementById('organization').value || ''
+            };
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/admin/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Admin created successfully!');
+                    window.location.href = 'admin_login.html';
+                } else {
+                    alert(data.error || 'Registration failed');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+    </script>
+</body>
+</html>

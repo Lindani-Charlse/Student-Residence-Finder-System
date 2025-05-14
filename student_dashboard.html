@@ -1,0 +1,1313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard | Residence Finder</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Mapbox GL -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        .student-dashboard {
+            background-color: #f8f9fa;
+        }
+        .property-card {
+            transition: transform 0.2s;
+        }
+        .property-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .property-img {
+            height: 200px;
+            object-fit: cover;
+        }
+        .save-property .far {
+            color: #dc3545;
+        }
+        .save-property .fas {
+            display: none;
+            color: #dc3545;
+        }
+        .save-property.active .far {
+            display: none;
+        }
+        .save-property.active .fas {
+            display: inline-block;
+        }
+        #mapViewBtn.active, #listViewBtn.active {
+            background-color: #0d6efd;
+            color: white;
+        }
+        /* Modal styles */
+        #leaseTerms {
+            max-height: 200px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+        }
+        .view-details {
+            transition: all 0.2s;
+        }
+        .view-details:hover {
+            transform: translateY(-2px);
+        }
+        .modal-property-img {
+            height: 200px;
+            object-fit: cover;
+            width: 100%;
+            border-radius: 0.25rem;
+        }
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1100;
+        }
+        /* Profile section styles */
+        .profile-picture-container {
+            position: relative;
+            display: inline-block;
+        }
+        .profile-picture-edit {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        #profilePictureInput {
+            display: none;
+        }
+        .preferred-accommodation {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .pref-option {
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        .pref-option.active {
+            background-color: #0d6efd;
+            color: white;
+            border-color: #0d6efd;
+        }
+    </style>
+</head>
+<body class="student-dashboard">
+    <!-- Toast notifications -->
+    <div class="toast-container">
+        <div id="toast" class="toast align-items-center text-white bg-success" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body" id="toastMessage"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-home me-2"></i>ResidenceFinder
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#search-section"><i class="fas fa-search me-1"></i> Search</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#saved-section"><i class="fas fa-heart me-1"></i> Saved</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#messages-section"><i class="fas fa-envelope me-1"></i> Messages</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#appointments-section"><i class="fas fa-calendar-alt me-1"></i> Appointments</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center">
+                    <div class="dropdown">
+                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="userDropdown" data-bs-toggle="dropdown">
+                            <img src="holani.jpg" alt="Profile" width="32" height="32" class="rounded-circle me-2">
+                            <span id="currentUserName">Loading...</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#profile-section"><i class="fas fa-user me-2"></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#" id="logoutBtn"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar Filters -->
+            <div class="col-lg-3 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Search Filters</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="searchFilters">
+                            <!-- Location -->
+                            <div class="mb-3">
+                                <label class="form-label">Location</label>
+                                <select class="form-select" id="location">
+                                    <option selected>Anywhere</option>
+                                    <option>Within 1km of campus</option>
+                                    <option>Within 3km of campus</option>
+                                    <option>Near public transport</option>
+                                    <option>Braamfontein</option>
+                                    <option>Hatfield</option>
+                                    <option>Sunnyside</option>
+                                </select>
+                            </div>
+
+                            <!-- Rent Range -->
+                            <div class="mb-3">
+                                <label class="form-label">Rent Range (ZAR)</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="number" class="form-control" placeholder="Min" id="minRent" min="0" step="500">
+                                    <span class="mx-2">to</span>
+                                    <input type="number" class="form-control" placeholder="Max" id="maxRent" min="0" step="500">
+                                </div>
+                                <div id="rentRange" class="mt-2"></div>
+                            </div>
+
+                            <!-- Accommodation Type -->
+                            <div class="mb-3">
+                                <label class="form-label">Accommodation Type</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="privateRoom" checked>
+                                    <label class="form-check-label" for="privateRoom">Private Room</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="sharedRoom" checked>
+                                    <label class="form-check-label" for="sharedRoom">Shared Room</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="studio" checked>
+                                    <label class="form-check-label" for="studio">Studio Apartment</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="sharedApartment" checked>
+                                    <label class="form-check-label" for="sharedApartment">Shared Apartment</label>
+                                </div>
+                            </div>
+
+                            <!-- Amenities -->
+                            <div class="mb-3">
+                                <label class="form-label">Amenities</label>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="wifi">
+                                    <label class="form-check-label" for="wifi">Wi-Fi</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="parking">
+                                    <label class="form-check-label" for="parking">Parking</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="laundry">
+                                    <label class="form-check-label" for="laundry">Laundry</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="kitchen">
+                                    <label class="form-check-label" for="kitchen">Kitchen</label>
+                                </div>
+                            </div>
+
+                            <!-- Availability -->
+                            <div class="mb-3">
+                                <label class="form-label">Availability</label>
+                                <div class="input-group mb-2">
+                                    <span class="input-group-text">From</span>
+                                    <input type="date" class="form-control" id="moveInDate">
+                                </div>
+                                <div class="input-group">
+                                    <span class="input-group-text">To</span>
+                                    <input type="date" class="form-control" id="moveOutDate">
+                                </div>
+                            </div>
+
+                            <!-- Sort Options -->
+                            <div class="mb-3">
+                                <label class="form-label">Sort By</label>
+                                <select class="form-select" id="sortBy">
+                                    <option value="relevance">Relevance</option>
+                                    <option value="price-asc">Price: Low to High</option>
+                                    <option value="price-desc">Price: High to Low</option>
+                                    <option value="distance">Distance to Campus</option>
+                                    <option value="newest">Newest Listings</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-search me-2"></i>Apply Filters
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content Area -->
+            <div class="col-lg-9">
+                <!-- Search Results Section -->
+                <section id="search-section" class="mb-5">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h2><i class="fas fa-search me-2"></i>Available Residences</h2>
+                        <div class="d-flex">
+                            <button class="btn btn-outline-secondary me-2" id="mapViewBtn">
+                                <i class="fas fa-map-marked-alt me-1"></i> Map View
+                            </button>
+                            <button class="btn btn-outline-secondary active" id="listViewBtn">
+                                <i class="fas fa-list me-1"></i> List View
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Map View (Hidden by default) -->
+                    <div id="mapView" style="display: none; height: 500px;" class="mb-4 rounded-3 shadow-sm">
+                        <div id="map" class="h-100 rounded-3"></div>
+                    </div>
+
+                    <!-- List View -->
+                    <div id="listView">
+                        <div class="row g-4" id="residencesContainer">
+                            <!-- Residences will be loaded here dynamically -->
+                            <div class="col-12 text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3">Loading residences...</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Saved Properties Section -->
+                <section id="saved-section" class="mb-5">
+                    <h2 class="mb-4"><i class="fas fa-heart me-2"></i>Saved Properties</h2>
+                    <div class="alert alert-info" id="savedPropertiesAlert">
+                        Loading saved properties...
+                    </div>
+                    <div class="row g-4" id="savedPropertiesContainer">
+                        <!-- Saved properties will be loaded here dynamically -->
+                    </div>
+                </section>
+
+                <!-- Messages Section -->
+                <section id="messages-section" class="mb-5">
+                    <h2 class="mb-4"><i class="fas fa-envelope me-2"></i>Messages</h2>
+                    <div class="card">
+                        <div class="card-header">
+                            <ul class="nav nav-tabs card-header-tabs">
+                                <li class="nav-item">
+                                    <a class="nav-link active" href="#">Inbox (3)</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Sent</a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" href="#">Archived</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="list-group list-group-flush">
+                                <!-- Message 1 -->
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://randomuser.me/api/portraits/men/32.jpg" width="40" height="40" class="rounded-circle me-3" alt="Landlord">
+                                            <div>
+                                                <h6 class="mb-0">Mr. Peterson</h6>
+                                                <small class="text-muted">Braamfontein Studio</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted">Today, 10:30 AM</small>
+                                            <span class="badge bg-primary rounded-pill ms-2">New</span>
+                                        </div>
+                                    </div>
+                                    <p class="mb-0 mt-2">Hi Sarah, the studio is still available. Would you like to schedule a viewing?</p>
+                                </a>
+                                <!-- Message 2 -->
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://randomuser.me/api/portraits/women/45.jpg" width="40" height="40" class="rounded-circle me-3" alt="Landlord">
+                                            <div>
+                                                <h6 class="mb-0">Ms. Khumalo</h6>
+                                                <small class="text-muted">Hatfield Shared Apartment</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted">Yesterday, 4:15 PM</small>
+                                        </div>
+                                    </div>
+                                    <p class="mb-0 mt-2">I've attached the lease agreement for your review.</p>
+                                </a>
+                                <!-- Message 3 -->
+                                <a href="#" class="list-group-item list-group-item-action">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://randomuser.me/api/portraits/men/68.jpg" width="40" height="40" class="rounded-circle me-3" alt="Landlord">
+                                            <div>
+                                                <h6 class="mb-0">Dr. Van der Merwe</h6>
+                                                <small class="text-muted">Sunnyside Private Room</small>
+                                            </div>
+                                        </div>
+                                        <div class="text-end">
+                                            <small class="text-muted">Monday, 9:20 AM</small>
+                                        </div>
+                                    </div>
+                                    <p class="mb-0 mt-2">The room will be available from next month as discussed.</p>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Appointments Section -->
+                <section id="appointments-section" class="mb-5">
+                    <h2 class="mb-4"><i class="fas fa-calendar-alt me-2"></i>Viewing Appointments</h2>
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Property</th>
+                                            <th>Date & Time</th>
+                                            <th>Location</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="appointmentsTableBody">
+                                        <!-- Appointments will be loaded here dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Profile Section -->
+                <section id="profile-section">
+                    <h2 class="mb-4"><i class="fas fa-user me-2"></i>My Profile</h2>
+                    <div class="row">
+                        <div class="col-lg-4 mb-4">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <div class="profile-picture-container mb-3">
+                                        <img id="profilePicture" src="holani.jpg" class="rounded-circle" width="120" height="120" alt="Profile">
+                                        <div class="profile-picture-edit" id="editProfilePictureBtn">
+                                            <i class="fas fa-camera"></i>
+                                        </div>
+                                        <input type="file" id="profilePictureInput" accept="image/*">
+                                    </div>
+                                    <h4 id="profileFullName">Loading...</h4>
+                                    <p class="text-muted" id="profileUniversity">Loading...</p>
+                                    <button class="btn btn-outline-primary btn-sm" id="editProfileBtn">Edit Profile</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-8">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-4">Personal Information</h5>
+                                    <form id="profileForm">
+                                        <div class="row g-3">
+                                            <div class="col-md-6">
+                                                <label class="form-label">Full Name</label>
+                                                <input type="text" class="form-control" id="fullName" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Student Number</label>
+                                                <input type="text" class="form-control" id="studentId" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Email</label>
+                                                <input type="email" class="form-control" id="email" disabled>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Phone</label>
+                                                <input type="tel" class="form-control" id="phoneNumber" required>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">University</label>
+                                                <select class="form-select" id="university" required>
+                                                    <option value="University of Johannesburg">University of Johannesburg</option>
+                                                    <option value="University of Pretoria">University of Pretoria</option>
+                                                    <option value="Tshwane University of Technology">Tshwane University of Technology</option>
+                                                    <option value="University of Cape Town">University of Cape Town</option>
+                                                    <option value="University of the Witwatersrand">University of the Witwatersrand</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <label class="form-label">Campus</label>
+                                                <input type="text" class="form-control" id="campusLocation" required>
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label">Preferred Accommodation</label>
+                                                <div class="preferred-accommodation">
+                                                    <div class="pref-option" data-type="private">
+                                                        <i class="fas fa-bed me-1"></i> Private Room
+                                                    </div>
+                                                    <div class="pref-option" data-type="shared">
+                                                        <i class="fas fa-users me-1"></i> Shared Room
+                                                    </div>
+                                                    <div class="pref-option" data-type="studio">
+                                                        <i class="fas fa-home me-1"></i> Studio
+                                                    </div>
+                                                    <div class="pref-option" data-type="apartment">
+                                                        <i class="fas fa-building me-1"></i> Apartment
+                                                    </div>
+                                                </div>
+                                                <input type="hidden" id="preferredAccommodation">
+                                            </div>
+                                            <div class="col-12">
+                                                <label class="form-label">Maximum Budget (ZAR)</label>
+                                                <input type="range" class="form-range" min="2000" max="15000" step="500" value="6000" id="budgetRange">
+                                                <div class="d-flex justify-content-between">
+                                                    <small>R2,000</small>
+                                                    <small id="budgetValue">R6,000</small>
+                                                    <small>R15,000</small>
+                                                </div>
+                                            </div>
+                                            <div class="col-12 mt-4">
+                                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                                                <button type="button" class="btn btn-outline-secondary ms-2" id="cancelEditBtn" style="display: none;">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointment/Lease Modal -->
+    <div class="modal fade" id="appointmentModal" tabindex="-1" aria-labelledby="appointmentModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="appointmentModalLabel">Schedule Viewing & Lease Signing</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6>Property Details</h6>
+                            <img id="modalPropertyImage" src="" class="modal-property-img mb-3" alt="Property Image">
+                            <h5 id="modalPropertyName"></h5>
+                            <p id="modalPropertyLocation" class="text-muted"></p>
+                            <p id="modalPropertyPrice" class="fw-bold"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <form id="appointmentForm">
+                                <div class="mb-3">
+                                    <label for="appointmentDate" class="form-label">Preferred Date</label>
+                                    <input type="date" class="form-control" id="appointmentDate" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="appointmentTime" class="form-label">Preferred Time</label>
+                                    <select class="form-select" id="appointmentTime" required>
+                                        <option value="">Select a time</option>
+                                        <option value="09:00">09:00 AM</option>
+                                        <option value="10:00">10:00 AM</option>
+                                        <option value="11:00">11:00 AM</option>
+                                        <option value="12:00">12:00 PM</option>
+                                        <option value="13:00">01:00 PM</option>
+                                        <option value="14:00">02:00 PM</option>
+                                        <option value="15:00">03:00 PM</option>
+                                        <option value="16:00">04:00 PM</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="contactNumber" class="form-label">Contact Number</label>
+                                    <input type="tel" class="form-control" id="contactNumber" required>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                                    <label class="form-check-label" for="agreeTerms">I agree to the terms and conditions</label>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="signLease">
+                                    <label class="form-check-label" for="signLease">Sign lease agreement electronically</label>
+                                </div>
+                                <div id="leaseTerms" class="border p-3 mb-3">
+                                    <h6>Lease Agreement Terms</h6>
+                                    <p>By signing this lease, you agree to:</p>
+                                    <ul>
+                                        <li>Pay rent of <span id="leaseAmount"></span> monthly</li>
+                                        <li>12-month minimum lease term</li>
+                                        <li>1 month's rent as security deposit</li>
+                                        <li>No pets allowed without prior written consent</li>
+                                        <li>No subletting without landlord approval</li>
+                                    </ul>
+                                    <div class="form-check">
+                                        <input type="checkbox" class="form-check-input" id="agreeLease">
+                                        <label class="form-check-label" for="agreeLease">I agree to the lease terms</label>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="submitAppointment">Submit Request</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Mapbox GL JS -->
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.14.1/mapbox-gl.js"></script>
+    <!-- Custom JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize toast notifications
+            const toastEl = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const toast = new bootstrap.Toast(toastEl);
+            
+            function showToast(message, type = 'success') {
+                toastMessage.textContent = message;
+                toastEl.className = `toast align-items-center text-white bg-${type}`;
+                toast.show();
+            }
+    
+            // Current user data and favorites array
+            let currentUser = null;
+            let favorites = [];
+            let appointments = [];
+    
+            // Get the logged in user
+            function getLoggedInUser() {
+                try {
+                    // 1. Check sessionStorage first
+                    const sessionUser = sessionStorage.getItem('studentUser');
+                    if (sessionUser) {
+                        return JSON.parse(sessionUser);
+                    }
+    
+                    // 2. Check URL parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const email = urlParams.get('email');
+                    
+                    if (email) {
+                        // For testing - create a mock user if not found in session
+                        return {
+                            email: email,
+                            fullName: email.split('@')[0] || "Test Student",
+                            studentId: "2023" + Math.floor(1000 + Math.random() * 9000),
+                            phoneNumber: "+2776" + Math.floor(1000000 + Math.random() * 9000000),
+                            university: "University of Johannesburg",
+                            campusLocation: "Auckland Park",
+                            profilePicture: "holani.jpg",
+                            preferredAccommodation: ["private", "shared"],
+                            maxBudget: 6000,
+                            role: "student",
+                            favorites: []
+                        };
+                    }
+    
+                    // 3. If no user found, redirect to login
+                    window.location.href = 'student_login.html';
+                    return null;
+                } catch (error) {
+                    console.error('Error getting user:', error);
+                    window.location.href = 'student_login.html';
+                    return null;
+                }
+            }
+    
+            // Update UI with current user data
+            function updateProfileUI() {
+                if (!currentUser) return;
+    
+                // Profile card
+                document.getElementById('profileFullName').textContent = currentUser.fullName;
+                document.getElementById('profileUniversity').textContent = currentUser.university;
+                document.getElementById('profilePicture').src = currentUser.profilePicture || 'holani.jpg';
+                
+                // Profile form
+                document.getElementById('fullName').value = currentUser.fullName || '';
+                document.getElementById('studentId').value = currentUser.studentId || '';
+                document.getElementById('email').value = currentUser.email || '';
+                document.getElementById('phoneNumber').value = currentUser.phoneNumber || '';
+                document.getElementById('university').value = currentUser.university || '';
+                document.getElementById('campusLocation').value = currentUser.campusLocation || '';
+                document.getElementById('budgetRange').value = currentUser.maxBudget || 6000;
+                document.getElementById('budgetValue').textContent = `R${(currentUser.maxBudget || 6000).toLocaleString()}`;
+                
+                // Update preferred accommodation options
+                const preferredOptions = document.querySelectorAll('.pref-option');
+                preferredOptions.forEach(option => {
+                    option.classList.toggle(
+                        'active', 
+                        currentUser.preferredAccommodation && 
+                        currentUser.preferredAccommodation.includes(option.dataset.type)
+                    );
+                });
+                
+                // Update navigation
+                document.getElementById('currentUserName').textContent = currentUser.fullName;
+            }
+    
+            // Initialize everything
+            async function initializeApp() {
+                currentUser = getLoggedInUser();
+                if (!currentUser) return;
+                
+                // Initialize favorites
+                favorites = currentUser.favorites || [];
+                
+                updateProfileUI();
+                await fetchResidences();
+                loadSavedProperties();
+                loadAppointments();
+                initEventListeners();
+                
+                // Show welcome message
+                showToast(`Welcome back, ${currentUser.fullName}!`);
+            }
+    
+            // Initialize event listeners
+            function initEventListeners() {
+                // View toggle functionality
+                const mapViewBtn = document.getElementById('mapViewBtn');
+                const listViewBtn = document.getElementById('listViewBtn');
+                const mapView = document.getElementById('mapView');
+                const listView = document.getElementById('listView');
+    
+                mapViewBtn.addEventListener('click', function() {
+                    mapView.style.display = 'block';
+                    listView.style.display = 'none';
+                    mapViewBtn.classList.add('active');
+                    listViewBtn.classList.remove('active');
+                    initMap();
+                });
+    
+                listViewBtn.addEventListener('click', function() {
+                    mapView.style.display = 'none';
+                    listView.style.display = 'block';
+                    listViewBtn.classList.add('active');
+                    mapViewBtn.classList.remove('active');
+                });
+    
+                // Profile picture change
+                document.getElementById('editProfilePictureBtn').addEventListener('click', () => 
+                    document.getElementById('profilePictureInput').click()
+                );
+                
+                document.getElementById('profilePictureInput').addEventListener('change', function(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(event) {
+                            currentUser.profilePicture = event.target.result;
+                            document.getElementById('profilePicture').src = currentUser.profilePicture;
+                            sessionStorage.setItem('studentUser', JSON.stringify(currentUser));
+                            showToast('Profile picture updated');
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+    
+                // Budget range update
+                document.getElementById('budgetRange').addEventListener('input', function() {
+                    document.getElementById('budgetValue').textContent = 
+                        `R${parseInt(this.value).toLocaleString()}`;
+                });
+    
+                // Edit profile button
+                document.getElementById('editProfileBtn').addEventListener('click', () => {
+                    toggleEditMode(true);
+                });
+                
+                // Cancel edit button
+                document.getElementById('cancelEditBtn').addEventListener('click', () => {
+                    toggleEditMode(false);
+                });
+    
+                // Profile form submission
+                document.getElementById('profileForm').addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    
+                    // Update current user with form data
+                    currentUser.fullName = document.getElementById('fullName').value;
+                    currentUser.studentId = document.getElementById('studentId').value;
+                    currentUser.phoneNumber = document.getElementById('phoneNumber').value;
+                    currentUser.university = document.getElementById('university').value;
+                    currentUser.campusLocation = document.getElementById('campusLocation').value;
+                    currentUser.maxBudget = parseInt(document.getElementById('budgetRange').value);
+                    
+                    // Update preferred accommodation
+                    currentUser.preferredAccommodation = Array.from(
+                        document.querySelectorAll('.pref-option.active')
+                    ).map(opt => opt.dataset.type);
+                    
+                    // Update session storage
+                    sessionStorage.setItem('studentUser', JSON.stringify(currentUser));
+                    
+                    showToast('Profile updated successfully');
+                    toggleEditMode(false);
+                });
+    
+                // Logout functionality
+                document.getElementById('logoutBtn').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    sessionStorage.removeItem('studentUser');
+                    window.location.href = 'student_login.html';
+                });
+    
+                // Preferred accommodation selection
+                document.querySelectorAll('.pref-option').forEach(option => {
+                    option.addEventListener('click', function() {
+                        this.classList.toggle('active');
+                    });
+                });
+    
+                // Save property functionality
+                document.addEventListener('click', async function(e) {
+                    if (e.target.closest('.save-property')) {
+                        const btn = e.target.closest('.save-property');
+                        const propertyId = btn.closest('.property-card').getAttribute('data-property-id');
+                        
+                        if (!propertyId || !currentUser) return;
+                        
+                        try {
+                            const isFavorite = btn.classList.contains('active');
+                            const method = isFavorite ? 'DELETE' : 'POST';
+                            
+                            // Update favorites array immediately for responsive UI
+                            if (isFavorite) {
+                                favorites = favorites.filter(id => id !== propertyId);
+                            } else {
+                                favorites.push(propertyId);
+                            }
+                            
+                            // Update UI immediately
+                            btn.classList.toggle('active');
+                            
+                            // Update backend
+                            const response = await fetch(`http://localhost:3000/api/students/${currentUser.email}/favorites/${propertyId}`, {
+                                method,
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            
+                            if (!response.ok) {
+                                // Revert if API call fails
+                                if (isFavorite) {
+                                    favorites.push(propertyId);
+                                } else {
+                                    favorites = favorites.filter(id => id !== propertyId);
+                                }
+                                btn.classList.toggle('active');
+                                throw new Error('Failed to update favorites');
+                            }
+                            
+                            // Update current user's favorites
+                            currentUser.favorites = favorites;
+                            sessionStorage.setItem('studentUser', JSON.stringify(currentUser));
+                            
+                            showToast(isFavorite ? 'Removed from saved properties' : 'Added to saved properties');
+                            loadSavedProperties();
+                        } catch (error) {
+                            console.error('Error updating favorites:', error);
+                            showToast(error.message || 'Failed to update favorites', 'danger');
+                        }
+                    }
+                });
+    
+                // Remove saved property
+                document.addEventListener('click', async function(e) {
+                    if (e.target.closest('.remove-saved')) {
+                        const btn = e.target.closest('.remove-saved');
+                        const propertyId = btn.getAttribute('data-property-id');
+                        
+                        if (!propertyId || !currentUser) return;
+                        
+                        try {
+                            // Update favorites array
+                            favorites = favorites.filter(id => id !== propertyId);
+                            
+                            // Update backend
+                            const response = await fetch(`http://localhost:3000/api/students/${currentUser.email}/favorites/${propertyId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                }
+                            });
+                            
+                            if (!response.ok) {
+                                // Revert if API call fails
+                                favorites.push(propertyId);
+                                throw new Error('Failed to remove property');
+                            }
+                            
+                            // Update current user and UI
+                            currentUser.favorites = favorites;
+                            sessionStorage.setItem('studentUser', JSON.stringify(currentUser));
+                            
+                            // Also update the heart icon in the main listings if visible
+                            document.querySelectorAll(`.property-card[data-property-id="${propertyId}"] .save-property`)
+                                .forEach(icon => icon.classList.remove('active'));
+                            
+                            showToast('Removed from saved properties');
+                            loadSavedProperties();
+                        } catch (error) {
+                            console.error('Error removing saved property:', error);
+                            showToast(error.message || 'Failed to remove property', 'danger');
+                        }
+                    }
+                });
+            }
+    
+            // Toggle edit mode
+            function toggleEditMode(editing) {
+                const inputs = document.querySelectorAll('#profileForm input, #profileForm select');
+                inputs.forEach(input => {
+                    if (input.id !== 'email') {
+                        input.disabled = !editing;
+                    }
+                });
+                
+                document.getElementById('editProfileBtn').style.display = editing ? 'none' : 'inline-block';
+                document.getElementById('cancelEditBtn').style.display = editing ? 'inline-block' : 'none';
+            }
+    
+            // Initialize map
+            function initMap() {
+                mapboxgl.accessToken = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
+                const map = new mapboxgl.Map({
+                    container: 'map',
+                    style: 'mapbox://styles/mapbox/streets-v11',
+                    center: [28.0456, -26.2041], // Johannesburg coordinates
+                    zoom: 12
+                });
+    
+                // Add navigation controls
+                map.addControl(new mapboxgl.NavigationControl());
+    
+                // Add markers for residences
+                fetchResidences().then(residences => {
+                    residences.forEach(residence => {
+                        if (residence.location?.coordinates) {
+                            const marker = new mapboxgl.Marker()
+                                .setLngLat([
+                                    residence.location.coordinates.longitude,
+                                    residence.location.coordinates.latitude
+                                ])
+                                .setPopup(new mapboxgl.Popup().setHTML(`
+                                    <h5>${residence.name}</h5>
+                                    <p>${residence.location.address}</p>
+                                    <p class="fw-bold">R${residence.monthlyRate.toLocaleString()}/month</p>
+                                    <button class="btn btn-sm btn-primary w-100 view-details" 
+                                        data-property='${JSON.stringify(residence).replace(/'/g, "\\'")}'>
+                                        View Details
+                                    </button>
+                                `))
+                                .addTo(map);
+                        }
+                    });
+                });
+            }
+    
+            // Fetch residences from backend
+            async function fetchResidences() {
+                try {
+                    const response = await fetch('http://localhost:3000/api/residences');
+                    if (!response.ok) throw new Error('Failed to fetch residences');
+                    
+                    const residences = await response.json();
+                    displayResidences(residences);
+                    return residences;
+                } catch (error) {
+                    console.error('Error fetching residences:', error);
+                    document.getElementById('residencesContainer').innerHTML = `
+                        <div class="col-12 text-center py-5">
+                            <i class="fas fa-exclamation-triangle fa-2x text-danger mb-3"></i>
+                            <p>Failed to load residences. Please try again later.</p>
+                        </div>
+                    `;
+                    return [];
+                }
+            }
+    
+            // Display residences in list view
+            function displayResidences(residences) {
+                const container = document.getElementById('residencesContainer');
+                container.innerHTML = residences.length === 0 ? `
+                    <div class="col-12 text-center py-5">
+                        <i class="fas fa-home fa-2x text-muted mb-3"></i>
+                        <p>No residences found matching your criteria.</p>
+                    </div>
+                ` : residences.map(residence => `
+                    <div class="col-md-6 col-lg-4">
+                        <div class="card property-card h-100" data-property-id="${residence.id}">
+                            ${residence.isAvailable ? 
+                                '<div class="badge bg-success position-absolute top-0 end-0 m-2">Available</div>' : 
+                                '<div class="badge bg-secondary position-absolute top-0 end-0 m-2">Unavailable</div>'}
+                            <img src="${residence.images?.[0] || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'}" 
+                                 class="card-img-top property-img" alt="${residence.name}">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <h5 class="card-title mb-0">${residence.name}</h5>
+                                    <button class="btn btn-sm btn-outline-secondary save-property ${favorites.includes(residence.id) ? 'active' : ''}">
+                                        <i class="far fa-heart"></i>
+                                        <i class="fas fa-heart"></i>
+                                    </button>
+                                </div>
+                                <p class="card-text text-muted small">
+                                    <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                    ${residence.location?.address || residence.location || ''}
+                                </p>
+                                <div class="property-features d-flex flex-wrap gap-2 mb-3">
+                                    ${residence.amenities?.includes('wifi') ? '<span class="badge bg-light text-dark"><i class="fas fa-wifi me-1"></i> Wi-Fi</span>' : ''}
+                                    ${residence.amenities?.includes('parking') ? '<span class="badge bg-light text-dark"><i class="fas fa-car me-1"></i> Parking</span>' : ''}
+                                    <span class="badge bg-light text-dark"><i class="fas fa-bed me-1"></i> ${residence.beds} Bed${residence.beds > 1 ? 's' : ''}</span>
+                                    <span class="badge bg-light text-dark"><i class="fas fa-bath me-1"></i> ${residence.bathrooms} Bath${residence.bathrooms > 1 ? 's' : ''}</span>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="text-primary fw-bold">R${residence.monthlyRate.toLocaleString()}</span>/mo
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-primary view-details" 
+                                        data-property='${JSON.stringify(residence).replace(/'/g, "\\'")}'>
+                                        Schedule Viewing
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+    
+            // Load saved properties
+            async function loadSavedProperties() {
+                const container = document.getElementById('savedPropertiesContainer');
+                const alert = document.getElementById('savedPropertiesAlert');
+                
+                if (favorites.length === 0) {
+                    alert.innerHTML = 'You have no saved properties yet.';
+                    container.innerHTML = '';
+                    return;
+                }
+                
+                alert.innerHTML = `You have ${favorites.length} saved ${favorites.length === 1 ? 'property' : 'properties'}.`;
+                
+                try {
+                    // Get all favorite residences
+                    const residences = await Promise.all(
+                        favorites.map(id => 
+                            fetch(`http://localhost:3000/api/residences/${id}`)
+                                .then(res => {
+                                    if (!res.ok) throw new Error('Failed to fetch property');
+                                    return res.json();
+                                })
+                                .catch(() => null)
+                        )
+                    );
+                    
+                    // Filter out any null results (failed fetches)
+                    const validResidences = residences.filter(res => res !== null);
+                    
+                    if (validResidences.length === 0) {
+                        container.innerHTML = `
+                            <div class="col-12 text-center py-5">
+                                <i class="fas fa-exclamation-triangle fa-2x text-muted mb-3"></i>
+                                <p>Failed to load saved properties</p>
+                            </div>
+                        `;
+                        return;
+                    }
+                    
+                    container.innerHTML = validResidences.map(residence => `
+                        <div class="col-md-6">
+                            <div class="card h-100">
+                                <div class="row g-0">
+                                    <div class="col-md-4">
+                                        <img src="${residence.images?.[0] || 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80'}" 
+                                             class="img-fluid rounded-start h-100" alt="${residence.name}" style="object-fit: cover;">
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between">
+                                                <h5 class="card-title">${residence.name}</h5>
+                                                <button class="btn btn-sm btn-outline-danger remove-saved" data-property-id="${residence.id}">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            <p class="card-text text-muted small">
+                                                <i class="fas fa-map-marker-alt text-danger me-1"></i>
+                                                ${residence.location?.address || residence.location || ''}
+                                            </p>
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <span class="text-primary fw-bold">R${residence.monthlyRate?.toLocaleString() || '0'}/mo</span>
+                                                <div>
+                                                    <button class="btn btn-sm btn-primary me-2">
+                                                        <i class="fas fa-envelope me-1"></i> Contact
+                                                    </button>
+                                                    <button class="btn btn-sm btn-outline-primary view-details" 
+                                                        data-property='${JSON.stringify(residence).replace(/'/g, "\\'")}'>
+                                                        <i class="fas fa-calendar me-1"></i> Viewing
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `).join('');
+                } catch (error) {
+                    console.error('Error loading saved properties:', error);
+                    alert.innerHTML = 'Failed to load saved properties. Please try again later.';
+                    container.innerHTML = '';
+                }
+            }
+
+            // Load appointments from backend
+            async function loadAppointments() {
+                try {
+                    // In a real app, this would fetch from your backend API
+                    // For demo purposes, we'll use mock data
+                    const mockAppointments = [
+                        {
+                            id: 'app1',
+                            residenceId: 'res1',
+                            residenceName: 'Braamfontein Studio',
+                            residenceImage: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80',
+                            date: '2025-09-15',
+                            time: '14:00',
+                            location: '24 Juta St, Braamfontein',
+                            status: 'confirmed',
+                            contactNumber: currentUser?.phoneNumber || '+27761234567'
+                        },
+                        {
+                            id: 'app2',
+                            residenceId: 'res2',
+                            residenceName: 'Sunnyside Private Room',
+                            residenceImage: 'https://images.unsplash.com/photo-1554469384-e58fac16e23a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1374&q=80',
+                            date: '2025-09-18',
+                            time: '10:30',
+                            location: '12 Sunnyside Ave, Pretoria',
+                            status: 'pending',
+                            contactNumber: currentUser?.phoneNumber || '+27761234567'
+                        }
+                    ];
+
+                    appointments = mockAppointments;
+                    displayAppointments();
+                } catch (error) {
+                    console.error('Error loading appointments:', error);
+                    showToast('Failed to load appointments', 'danger');
+                }
+            }
+
+            // Display appointments in the table
+            function displayAppointments() {
+                const tableBody = document.getElementById('appointmentsTableBody');
+                
+                if (appointments.length === 0) {
+                    tableBody.innerHTML = `
+                        <tr>
+                            <td colspan="5" class="text-center py-4">
+                                <i class="fas fa-calendar-times fa-2x text-muted mb-3"></i>
+                                <p>No upcoming appointments</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tableBody.innerHTML = appointments.map(appointment => `
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <img src="${appointment.residenceImage}" width="50" height="50" class="rounded me-3" style="object-fit: cover;">
+                                <div>
+                                    <h6 class="mb-0">${appointment.residenceName}</h6>
+                                    <small class="text-muted">${appointment.location}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>${formatAppointmentDate(appointment.date, appointment.time)}</td>
+                        <td>${appointment.location}</td>
+                        <td>
+                            <span class="badge ${appointment.status === 'confirmed' ? 'bg-success' : 'bg-warning text-dark'}">
+                                ${appointment.status === 'confirmed' ? 'Confirmed' : 'Pending'}
+                            </span>
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-2" 
+                                onclick="viewAppointmentDetails('${appointment.id}')">
+                                Details
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" 
+                                onclick="cancelAppointment('${appointment.id}')">
+                                Cancel
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+
+            // Format appointment date for display
+            function formatAppointmentDate(dateStr, timeStr) {
+                const date = new Date(`${dateStr}T${timeStr}:00`);
+                const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
+                return `${date.toLocaleDateString('en-US', options)}<br>${timeStr} ${parseInt(timeStr.split(':')[0]) >= 12 ? 'PM' : 'AM'}`;
+            }
+
+            // View appointment details
+            window.viewAppointmentDetails = function(appointmentId) {
+                const appointment = appointments.find(a => a.id === appointmentId);
+                if (!appointment) return;
+                
+                // In a real app, you would show more detailed information
+                alert(`Appointment Details:\n\nProperty: ${appointment.residenceName}\nDate: ${formatAppointmentDate(appointment.date, appointment.time)}\nStatus: ${appointment.status}\nContact: ${appointment.contactNumber}`);
+            };
+
+            // Cancel appointment
+            window.cancelAppointment = function(appointmentId) {
+                if (confirm('Are you sure you want to cancel this appointment?')) {
+                    // In a real app, this would call your backend API
+                    appointments = appointments.filter(a => a.id !== appointmentId);
+                    displayAppointments();
+                    showToast('Appointment cancelled successfully');
+                }
+            };
+    
+            // Initialize appointment modal
+            const appointmentModal = new bootstrap.Modal(document.getElementById('appointmentModal'));
+            let currentProperty = null;
+    
+            // Function to open modal with property details
+            function openAppointmentModal(property) {
+                currentProperty = property;
+                document.getElementById('modalPropertyName').textContent = property.name;
+                document.getElementById('modalPropertyLocation').textContent = property.location?.address || property.location || '';
+                document.getElementById('modalPropertyPrice').textContent = `R${property.monthlyRate.toLocaleString()}/month`;
+                document.getElementById('modalPropertyImage').src = property.images?.[0] || 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1470&q=80';
+                document.getElementById('leaseAmount').textContent = `R${property.monthlyRate.toLocaleString()}`;
+                
+                // Set minimum date to tomorrow
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                document.getElementById('appointmentDate').min = tomorrow.toISOString().split('T')[0];
+                
+                // Set contact number from profile
+                document.getElementById('contactNumber').value = currentUser?.phoneNumber || '';
+                
+                // Reset form
+                document.getElementById('appointmentForm').reset();
+                document.getElementById('leaseTerms').style.display = 'none';
+                
+                appointmentModal.show();
+            }
+    
+            // Toggle lease terms visibility
+            document.getElementById('signLease').addEventListener('change', function() {
+                document.getElementById('leaseTerms').style.display = this.checked ? 'block' : 'none';
+            });
+    
+            // Handle form submission
+            document.getElementById('submitAppointment').addEventListener('click', async function() {
+                const form = document.getElementById('appointmentForm');
+                
+                // Validate form
+                if (!form.checkValidity()) {
+                    form.classList.add('was-validated');
+                    return;
+                }
+    
+                if (document.getElementById('signLease').checked && 
+                    !document.getElementById('agreeLease').checked) {
+                    showToast('Please agree to the lease terms', 'warning');
+                    return;
+                }
+    
+                // Prepare appointment data
+                const appointmentData = {
+                    residenceId: currentProperty.id,
+                    residenceName: currentProperty.name,
+                    residenceImage: currentProperty.images?.[0] || '',
+                    studentId: currentUser?.studentId,
+                    studentName: currentUser?.fullName,
+                    date: document.getElementById('appointmentDate').value,
+                    time: document.getElementById('appointmentTime').value,
+                    location: currentProperty.location?.address || currentProperty.location || '',
+                    contactNumber: document.getElementById('contactNumber').value,
+                    signingLease: document.getElementById('signLease').checked,
+                    status: "pending"
+                };
+    
+                try {
+                    // In a real app, this would call your backend API
+                    // For demo purposes, we'll add it to our local array
+                    const newAppointment = {
+                        ...appointmentData,
+                        id: 'app' + Date.now()
+                    };
+                    
+                    appointments.unshift(newAppointment);
+                    displayAppointments();
+                    
+                    showToast('Viewing appointment scheduled successfully!');
+                    appointmentModal.hide();
+                } catch (error) {
+                    console.error('Error creating appointment:', error);
+                    showToast(error.message || 'Failed to schedule appointment. Please try again.', 'danger');
+                }
+            });
+    
+            // Add event listener for view details buttons
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('.view-details')) {
+                    const property = JSON.parse(e.target.getAttribute('data-property'));
+                    openAppointmentModal(property);
+                }
+            });
+    
+            // Start the application
+            initializeApp();
+        });
+    </script>
+</body>
+</html>

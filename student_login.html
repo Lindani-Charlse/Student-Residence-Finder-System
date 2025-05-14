@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login | Student Residence Finder</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --student-primary: #4b6cb7;
+            --student-secondary: #182848;
+        }
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            width: 100%;
+            max-width: 450px;
+        }
+        
+        .login-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            border-top: 5px solid var(--student-primary);
+        }
+        
+        .login-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--student-secondary);
+            font-size: 24px;
+            font-weight: 700;
+            text-decoration: none;
+            margin-bottom: 15px;
+        }
+        
+        .login-logo i {
+            margin-right: 10px;
+            font-size: 28px;
+        }
+        
+        .student-badge {
+            background-color: var(--student-primary);
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .btn-student {
+            background: linear-gradient(90deg, var(--student-primary) 0%, var(--student-secondary) 100%);
+            border: none;
+            padding: 10px;
+            font-weight: 500;
+            border-radius: 8px;
+        }
+        
+        .btn-student:hover {
+            background: linear-gradient(90deg, var(--student-secondary) 0%, var(--student-primary) 100%);
+        }
+        
+        .toggle-password {
+            cursor: pointer;
+        }
+        
+        #loginAlert {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        #loginSpinner {
+            display: none;
+        }
+        
+        .role-warning {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Alert Messages -->
+    <div id="loginAlert" class="alert alert-dismissible fade" role="alert">
+        <span id="alertMessage"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <!-- Login Container -->
+    <div class="login-container">
+        <div class="login-card">
+            <!-- Header -->
+            <div class="login-header text-center mb-4">
+                <a href="index.html" class="login-logo">
+                    <i class="fas fa-home"></i>
+                    <span>StudentResidenceFinder</span>
+                    <span class="student-badge">STUDENT</span>
+                </a>
+                <h2 class="mt-3">Student Login</h2>
+                <p class="text-muted">Access your student account</p>
+                
+                <div class="role-warning text-start">
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                    <strong>Note:</strong> This portal is for students only. 
+                    <a href="admin_login.html" class="text-decoration-none">Administrators</a> or 
+                    <a href="manager_login.html" class="text-decoration-none">Property Managers</a> 
+                    must use their dedicated portals.
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <form id="studentLoginForm" class="login-form">
+                <!-- Email -->
+                <div class="form-group mb-3">
+                    <label for="studentEmail" class="form-label">University Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" class="form-control" id="studentEmail" 
+                               placeholder="student@university.ac.za" required>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group mb-3">
+                    <label for="studentPassword" class="form-label">Password</label>
+                    <div class="input-group">
+                        <span class="input-group-text">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" class="form-control" id="studentPassword" 
+                               placeholder="Enter your password" required>
+                        <button class="btn btn-outline-secondary toggle-password" type="button">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Remember & Forgot -->
+                <div class="d-flex justify-content-between mb-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="rememberMe">
+                        <label class="form-check-label" for="rememberMe">Remember me</label>
+                    </div>
+                    <a href="forgot-password.html" class="text-primary">Forgot password?</a>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-student text-white w-100 mb-3" id="loginButton">
+                    <i class="fas fa-sign-in-alt me-2"></i> Login as Student
+                    <span class="spinner-border spinner-border-sm ms-2" id="loginSpinner"></span>
+                </button>
+
+                <!-- Registration Link -->
+                <div class="text-center">
+                    <p class="mb-0">Don't have an account? 
+                        <a href="student_signup.html" class="text-decoration-none">
+                            Register as Student
+                        </a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script>
+       
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle password visibility
+        document.querySelector('.toggle-password').addEventListener('click', function() {
+            const passwordInput = document.getElementById('studentPassword');
+            const icon = this.querySelector('i');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            }
+        });
+
+        // Handle remember me functionality
+        const rememberMe = document.getElementById('rememberMe');
+        const emailInput = document.getElementById('studentEmail');
+        
+        // Check if there's saved login data
+        if (localStorage.getItem('rememberMe') === 'true') {
+            rememberMe.checked = true;
+            emailInput.value = localStorage.getItem('savedEmail') || '';
+        }
+
+        // Login form submission
+        document.getElementById('studentLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const email = emailInput.value;
+            const password = document.getElementById('studentPassword').value;
+            const loginButton = document.getElementById('loginButton');
+            const spinner = document.getElementById('loginSpinner');
+            const alert = document.getElementById('loginAlert');
+            const alertMessage = document.getElementById('alertMessage');
+            
+            // Show loading spinner
+            loginButton.disabled = true;
+            spinner.style.display = 'inline-block';
+            
+            try {
+                // Mock login for testing - in a real app you would call your backend
+                // Here we're just simulating a successful login with mock data
+                const mockUser = {
+                    email: email,
+                    fullName: email.split('@')[0] || "Test Student",
+                    studentId: "2023" + Math.floor(1000 + Math.random() * 9000),
+                    phoneNumber: "+2776" + Math.floor(1000000 + Math.random() * 9000000),
+                    university: "University of Johannesburg",
+                    campusLocation: "Auckland Park",
+                    profilePicture: "holani.jpg",
+                    preferredAccommodation: ["private", "shared"],
+                    maxBudget: 6000,
+                    role: "student",
+                    favorites: []
+                };
+
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Save to localStorage if "Remember me" is checked
+                if (rememberMe.checked) {
+                    localStorage.setItem('rememberMe', 'true');
+                    localStorage.setItem('savedEmail', email);
+                } else {
+                    localStorage.removeItem('rememberMe');
+                    localStorage.removeItem('savedEmail');
+                }
+                
+                // Store user data in sessionStorage for dashboard access
+                sessionStorage.setItem('studentUser', JSON.stringify(mockUser));
+                
+                // Show success message
+                alertMessage.textContent = 'Student login successful! Redirecting...';
+                alert.classList.remove('alert-danger');
+                alert.classList.add('alert-success');
+                alert.classList.add('show');
+                
+                // Redirect to dashboard after 1.5 seconds
+                setTimeout(() => {
+                    window.location.href = 'student_dashboard.html?email=' + encodeURIComponent(email);
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Login error:', error);
+                alertMessage.textContent = error.message || 'Login failed. Please try again.';
+                alert.classList.remove('alert-success');
+                alert.classList.add('alert-danger');
+                alert.classList.add('show');
+            } finally {
+                // Hide loading spinner
+                loginButton.disabled = false;
+                spinner.style.display = 'none';
+                
+                // Auto-hide alert after 5 seconds
+                setTimeout(() => {
+                    alert.classList.remove('show');
+                }, 5000);
+            }
+        });
+    });
+
+    </script>
+</body>
+</html>
